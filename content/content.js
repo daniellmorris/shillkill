@@ -13,7 +13,7 @@ function actionEls(els, unhide) {
   if (els.length) {
     for (el of els) {
       if (hide.debug) {
-        el.style['background-color'] = 'aqua'
+        el.style['background-color'] = '#00a2f0'
         el.classList.add('hide-elements-now');
       } else {
         
@@ -25,9 +25,37 @@ function actionEls(els, unhide) {
   if (!unhide) {
     hide.allTimeCount += newCount;
     hide.count += newCount;
-    chrome.storage.local.set({allTimeCount: hide.allTimeCount, count: hide.count});
+    setKills();
+    if (chrome && chrome.storage && chrome.storage.local && chrome.storage.local.set) {
+      chrome.storage.local.set({allTimeCount: hide.allTimeCount, count: hide.count});
+    }
   }
 }
+
+function setKillsRaw() {
+  if (document.querySelector('.stream-footer .timeline-end.has-items .stream-end-inner')) {
+    var killsEl = $('.shillkill-kills');
+    if (!killsEl || killsEl.length<=0) {
+      var o = document.createElement('span');
+      o.className = 'shillkill-footer'
+      o.innerHTML = 'Tweets Killed: '
+      var i = document.createElement('span');
+      i.className = 'shillkill-kills';
+      i.innerHTML = " " + hide.count;
+      i.style = 'color: #00a2f0'
+      o.appendChild(i);
+      o.style = 'float: right; position: absolute; top: 30%; right: 20px; font-size: 30px;'
+      $('.stream-footer .timeline-end.has-items .stream-end-inner').css({position: 'relative'})
+      $('.stream-footer .timeline-end.has-items .stream-end-inner').append(o)
+    } else {
+      killsEl.each(function(){
+        killsEl.html(" " + hide.count);
+      });
+    }
+  }
+}
+
+var setKills = _.throttle(setKillsRaw, 100);
 
 function genDolRegex() {
   var reg = '\\$'
@@ -65,11 +93,13 @@ function doHidesRaw() {
     actionEls(els);   
   }
 }
-var doHides = doHidesRaw;//_.throttle(doHidesRaw, 100);
+var doHides = doHidesRaw;//_.throttle(doHidesRaw, 50);
 //var doHides = _.throttle(doHidesRaw, 20);
 
 var forceReload = _.throttle(function() {
-  $('.try-again-after-whale')[0].click()
+  if (!$('#search-query').is(':focus')) {
+    $('.try-again-after-whale')[0].click()
+  }
 }, 100);
 
 
@@ -85,13 +115,14 @@ var doHideInit = _.throttle(function() {
     // Guarentee that we have at least 10 visible tweets
     function reloadIfNeeded() {
       let els = document.querySelectorAll(".js-stream-item:not(.hide-elements-now)")
-      
-      if (els && els.length<=20) {
+     
+        console.log()
+      if (els && els.length<=20 && (hide.cash || hide.telegram)) {
         forceReload();
-        console.log("force reload", els);
-        window.setTimeout(reloadIfNeeded, 300);
+        //console.log("force reload", els);
+        window.setTimeout(reloadIfNeeded, 1000);
       } else {
-        console.log("force reload-timeout");
+        //console.log("force reload-timeout");
         window.setTimeout(reloadIfNeeded, 1000);
       }
     }
@@ -149,7 +180,7 @@ $(document).ready(function() {
       hide.telegram = changes.telegram.newValue; 
     if (typeof changes.debug!=='undefined')
       hide.debug = changes.debug.newValue; 
-    if (typeof changes.cashNum!=='undefined')
+    if (typeof changes.cashNum!=='undefined') 
       hide.cashNum = parseInt(changes.cashNum.newValue) || 3; 
 
     if (changes.cash && changes.cash.newValue!=changes.cash.oldValue
