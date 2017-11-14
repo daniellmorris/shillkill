@@ -65,8 +65,8 @@ function doHidesRaw() {
     actionEls(els);   
   }
 }
-//var doHides = doHidesRaw;//_.throttle(doHidesRaw, 100);
-var doHides = _.throttle(doHidesRaw, 100);
+var doHides = doHidesRaw;//_.throttle(doHidesRaw, 100);
+//var doHides = _.throttle(doHidesRaw, 20);
 
 var forceReload = _.throttle(function() {
   $('.try-again-after-whale')[0].click()
@@ -74,7 +74,7 @@ var forceReload = _.throttle(function() {
 
 
 var doHideInit = _.throttle(function() {
-  if (!hide.init) {
+  if (!hide.init && (hide.cash || hide.telegram)) {
     $(window).scroll(function() {
       if (hide.cash || hide.telegram) {
         if((Math.ceil($(window).scrollTop()) + $(window).height()) >= ($(document).height())) {
@@ -82,6 +82,18 @@ var doHideInit = _.throttle(function() {
         }
       }
     });
+    // Guarentee that we have at least 10 visible tweets
+    function reloadIfNeeded() {
+      let els = document.querySelectorAll(".js-stream-item:not(.hide-elements-now)")
+      
+      if (els && els.length>=20) {
+        forceReload();
+        window.setTimeout(reloadIfNeeded, 300);
+      } else {
+        window.setTimeout(reloadIfNeeded, 1000);
+      }
+    }
+    window.setTimeout(reloadIfNeeded, 300);
   }
   hide.init = true;
   doHides();
