@@ -74,7 +74,7 @@ var forceReload = _.throttle(function() {
 
 
 var doHideInit = _.throttle(function() {
-  if (!hide.init && (hide.cash || hide.telegram)) {
+  if (!hide.init) {
     $(window).scroll(function() {
       if (hide.cash || hide.telegram) {
         if((Math.ceil($(window).scrollTop()) + $(window).height()) >= ($(document).height())) {
@@ -86,10 +86,12 @@ var doHideInit = _.throttle(function() {
     function reloadIfNeeded() {
       let els = document.querySelectorAll(".js-stream-item:not(.hide-elements-now)")
       
-      if (els && els.length>=20) {
+      if (els && els.length<=20) {
         forceReload();
+        console.log("force reload", els);
         window.setTimeout(reloadIfNeeded, 300);
       } else {
+        console.log("force reload-timeout");
         window.setTimeout(reloadIfNeeded, 1000);
       }
     }
