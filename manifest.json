@@ -4,7 +4,8 @@
         {
             "matches": [
                 "https://twitter.com/",
-                "https://twitter.com/*"
+                "https://twitter.com/*",
+                "https://tweetdeck.twitter.com/"
             ], 
             "run_at": "document_end", 
             "js": [
